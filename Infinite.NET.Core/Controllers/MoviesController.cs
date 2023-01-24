@@ -1,6 +1,7 @@
 ﻿using Infinite.NET.Core.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -46,9 +47,13 @@ namespace Infinite.NET.Core.Controllers
             return View(movie);
         }
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            MovieViewModel viewModel = new MovieViewModel()
+            {
+                Genres=await this.GetGenres(),
+            };
+            return View(viewModel);
         }
         [HttpPost]
         public async Task<IActionResult> Create(MovieViewModel movie)
@@ -65,7 +70,11 @@ namespace Infinite.NET.Core.Controllers
                     }
                 }
             }
-            return View(movie);
+            MovieViewModel viewModel = new MovieViewModel()
+            {
+                Genres = await this.GetGenres(),
+            };
+            return View(viewModel);
         }
 
 
@@ -83,6 +92,7 @@ namespace Infinite.NET.Core.Controllers
                     if(result.IsSuccessStatusCode )
                     {
                         movie = await result.Content.ReadAsAsync<MovieViewModel>();
+                        movie.Genres= await this.GetGenres();
                         return View(movie);
                     }
                     else
@@ -115,7 +125,11 @@ namespace Infinite.NET.Core.Controllers
 
                 }
             }
-            return View();
+            MovieViewModel viewModel = new MovieViewModel()
+            {
+                Genres = await this.GetGenres(),
+            };
+            return View(viewModel);
         }
 
         [HttpGet]
@@ -159,6 +173,25 @@ namespace Infinite.NET.Core.Controllers
             }
             return View();
 
+        }
+
+        [NonAction]
+
+        public async Task<List<GenreViewModel>> GetGenres()
+        {
+            List<GenreViewModel> genres = new();
+            using(var client=new HttpClient())
+            {
+                client.BaseAddress = new System.Uri(_configuration["ApiUrl:api"]);
+                var result = await client.GetAsync("Movies/GetGenres");
+                if(result.IsSuccessStatusCode)
+                {
+                    genres=await result.Content.ReadAsAsync<List<GenreViewModel>>();
+
+                }
+                
+            }
+            return genres;
         }
 
     }
