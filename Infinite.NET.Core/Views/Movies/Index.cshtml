@@ -1,0 +1,35 @@
+﻿@model IEnumerable<MovieViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="row">
+    <div class="col-md-5">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Movie Name</th>
+                    
+                    <th>Genre Name</th>
+                    <th>Action</th>
+                   
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var item in Model)
+                {
+                    <tr>
+                        <td>@item.MovieName</td>
+                       
+                        <td>@item.GenreName</td>
+                        <td>
+                            <a asp-controller="Movies" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        </td>
+                       
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
