@@ -68,5 +68,98 @@ namespace Infinite.NET.Core.Controllers
             return View(movie);
         }
 
+
+        [HttpGet]
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            if (ModelState.IsValid)
+            {
+                MovieViewModel movie=null;
+                using(var client=new HttpClient())
+                {
+                    client.BaseAddress = new System.Uri(_configuration["ApiUrl:api"]);
+                    var result = await client.GetAsync($"Movies/getmoviebyid/{id}");
+                    if(result.IsSuccessStatusCode )
+                    {
+                        movie = await result.Content.ReadAsAsync<MovieViewModel>();
+                        return View(movie);
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Movie doesn't exist");
+                    }
+
+                }
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(MovieViewModel movie)
+        {
+            if (ModelState.IsValid)
+            {
+                using(var client=new HttpClient()) 
+                {
+                    client.BaseAddress = new System.Uri(_configuration["ApiUrl:api"]);
+                    var result = await client.PutAsJsonAsync($"Movies/updatemovie/{movie.Id}",movie);
+                    if(result.StatusCode==System.Net.HttpStatusCode.NoContent)
+                    {
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Server Error, Please try later");
+                    }
+
+                }
+            }
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            MovieViewModel movie = null;
+            using(var client=new HttpClient())
+            {
+                client.BaseAddress = new System.Uri(_configuration["ApiUrl:api"]);
+                var result = await client.GetAsync($"Movies/getmoviebyid/{id}");
+                if (result.IsSuccessStatusCode)
+                {
+                    movie = await result.Content.ReadAsAsync<MovieViewModel>();
+                    return View(movie);
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Server Error.Please try later");
+                }
+            }
+            return View(movie);
+        }
+
+        [HttpPost]
+
+        public async Task<IActionResult> Delete(MovieViewModel movie)
+        {
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new System.Uri(_configuration["ApiUrl:api"]);
+                var result = await client.DeleteAsync($"Movies/Deletemovie/{movie.Id}");
+                if (result.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Index");
+                   
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Server Error.Please try later");
+                }
+            }
+            return View();
+
+        }
+
     }
 }
